@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take the Quiz!</title>
+    <link rel="stylesheet" href="quiz.css" type="text/css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="quiz">
+        <h1>Ready to take the Quiz?</h1>
+        <form action="index.html">
+            <table>
+                <tr>
+                    <td id="lcont"><label for="difficulty">Choose Difficulty Level : </label></td>
+                    <td id="rcont">
+                        <select name="diff" id="diff_level" required>
+                            <option value="Easy" selected>Easy</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Hard">Hard</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td id="lcont"><label for="proctoring">Want Proctored Test : </label></td>
+                    <td id="rcont"><select name="proc" id="proc_option" required>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button type="submit">Start Test</button></td>
+                </tr>
+            </table>
+            
+        </form>
+    </div>
+</body>
+</html>

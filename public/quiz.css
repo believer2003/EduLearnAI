@@ -1,0 +1,44 @@
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+body{
+    background-color: #0F1426;
+    color: white;
+    font-family: "Montserrat", sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fade 3s ease-in-out forwards;
+    text-align: center;
+}
+table{
+    width: 720px;
+    height: 480px;
+    font-size: 20px;
+}
+#rcont{
+    text-align: right;
+    width: 50%;
+}
+#lcont{
+    text-align: left;
+}
+select{
+    width: 300px;
+    height: 50px;
+}
+button{
+    height: 50px;
+    width: 720px;
+    background-color: #ffd700;
+    border: 2px solid black;
+}
+button:hover{
+    background-color: crimson;
+}

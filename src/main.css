@@ -1,0 +1,227 @@
+@keyframes emerge{
+    0%{
+        opacity: 0%;
+    }
+    100%{
+        opacity: 100%;
+    }
+}
+
+.quiz{
+    background-color: #0F1426;
+    color: white;
+    font-family: "Montserrat", sans-serif;
+    height: 100vh;
+}
+.navbar{
+    width: 100%;
+    height: 70px;
+    border-bottom: 1px solid white;
+}
+.navbar ul{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    position: absolute;
+    width: 100%;
+    list-style: none;
+}
+.navbar li{
+    padding: 6px 10px;
+    width: 40px;
+    text-align: center;
+}
+.question {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 700px;
+    border: 1px solid white;
+    text-align: center;
+}
+.options{
+    width: 50%;
+    height: 350px;
+    margin-top: 50px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+p{
+    font-size: 25px;
+}
+.labels{
+    border: 1px solid white;
+    border-radius: 15px;
+    width: 100%;
+    height: 40px;
+    padding-top: 20px;
+}
+.options input
+{
+    position: absolute;
+    left: 10px;
+}
+.choices{
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    width: 100%;
+    list-style: none;
+    margin-top: 10px;
+}
+.prev{
+    position: absolute;
+    left: 5%;
+}
+.review{
+    position: absolute;
+    left: 45%;
+}
+.next{
+    position: absolute;
+    right: 5%;
+}
+.choices button{
+    font-size: 15px;
+    height: 40px;
+    width: 150px;
+}
+.prev button{
+    background-color: red;
+    border: 1px solid black;
+}
+.review button{
+    background-color: white;
+    border: 1px solid black;
+}
+.next button{
+    background-color: green;
+    border: 1px solid black;
+}
+.nav_selected{
+    background-color: #FFD700;
+    color: black;
+}
+.submission{
+    position: absolute;
+    right: 5%;
+}
+.submission button{
+    background-color: crimson;
+    border: none;
+    padding: 6px 10px;
+    aspect-ratio: 2/1;
+    font-size: 14px;
+}
+.result{
+    position: relative;
+    display: block;
+    width: 80%;
+    height: 400px;
+    margin: 80px auto;
+}
+.dataset{
+    position: relative;
+    display: block;
+    width: 80%;
+    margin: auto;
+    margin-top: 5%;
+}
+#left{
+    position: absolute;
+    display: block;
+    left: 0;
+    width: 50%;
+    height: 400px;
+    border: 1px solid wheat;
+}
+#left ul{
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    padding-top: 10%;
+    font-size: 25px;
+    animation: emerge 2s ease-in-out;
+}
+#left li{
+    padding: 10px;
+}
+#right{
+    position: absolute;
+    right: 0;
+    width: 50%;
+    border: 1px solid wheat;
+}
+.foptions{
+    position: relative;
+    top: 110%;
+    width: 70%;
+    margin: auto;
+}
+.foptions ul{
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50%;
+}
+.foptions button{
+    height: 50px;
+    aspect-ratio: 3/1;
+    font-size: 15px;
+}
+#retest{
+    background-color: #FFD700;
+    color: black;
+    border: none;
+}
+#home{
+    background-color: crimson;
+    color: white;
+    border: none;
+}
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+.main{
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    animation: fade 3s ease-in-out forwards;
+    text-align: center;
+}
+.table{
+    width: 720px;
+    height: 480px;
+    font-size: 20px;
+}
+#rcont{
+    text-align: right;
+    width: 50%;
+}
+#lcont{
+    text-align: left;
+}
+.table select{
+    width: 300px;
+    height: 50px;
+}
+.table button{
+    height: 50px;
+    width: 720px;
+    background-color: #ffd700;
+    border: 2px solid black;
+}
+.table button:hover{
+    background-color: crimson;
+}
