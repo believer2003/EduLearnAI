@@ -155,7 +155,7 @@ function Auth({setUserData}){
             username: event.target.username.value,
             password: event.target.password.value
         };
-        fetch(`http://localhost:5002/api/login`, {
+        fetch(`https://edu-upe0.onrender.com/api/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -195,7 +195,7 @@ function Auth({setUserData}){
             username: event.target.username.value,
             password: event.target.password.value
         };
-        fetch(`http://localhost:5002/api/create`, {
+        fetch(`https://edu-upe0.onrender.com/api/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -265,7 +265,7 @@ function Dashboard({userData,setPdfId,userTests,setUserTests,setUrl,setEssay}){
     },[]);
 
     function findTests() {
-        fetch(`http://localhost:5002/api/getAll`, {
+        fetch(`https://edu-upe0.onrender.com/api/getAll`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -598,7 +598,7 @@ function Navbar({curr,setCurr,userData,pdfId,dummy,create,join,essay,setDesdummy
             remarks: "Can be better",
             pdfFileId: pdfId
         };
-        fetch(`http://localhost:5002/api/createTest`, {
+        fetch(`https://edu-upe0.onrender.com/api/createTest`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -1931,7 +1931,7 @@ function TechChat({setFeedback}){
 
     const handleRunCode = async () => {
         try {
-            fetch("http://localhost:3002/https://api.jdoodle.com/v1/execute", {
+            fetch("https://cors-t50q.onrender.com/https://api.jdoodle.com/v1/execute", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
