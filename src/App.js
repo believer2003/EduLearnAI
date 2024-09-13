@@ -1,11 +1,19 @@
 import { Chart } from "react-google-charts";
 import React, { useEffect, useState } from 'react';
-import "./app.css"
+import "./App.css"
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import useDrivePicker from 'react-google-drive-picker'
 import Typewriter from 'typewriter-effect';
 import axios from 'axios';
+import { IpProvider } from './IpContext';
+import { useIp } from './IpContext';
+import codemirror from "./codemirror-5.65.17/lib/codemirror";
+import './codemirror-5.65.17/lib/codemirror.css';
+import './codemirror-5.65.17/theme/dracula.css';
+import './codemirror-5.65.17/mode/clike/clike.js';
+import './codemirror-5.65.17/mode/python/python.js';
+import './codemirror-5.65.17/addon/edit/closebrackets.js';
 
 // let dumm=[
 //     {
@@ -86,8 +94,6 @@ let desDummy=[
 ];
 
 export default function App(){
-
-
     const storedUserData = localStorage.getItem('userData');
     const initialUserData = storedUserData ? JSON.parse(storedUserData) : null;
     const [userData,setUserData]=useState(initialUserData);
@@ -102,8 +108,11 @@ export default function App(){
     const [chStatus,setChStatus]=useState(false);
     const [create,setCreate]=useState(true);
     const [join,setJoin]=useState(true);
+    const [ats,setAts]=useState('');
+    const [feedback,setFeedback]=useState('');
 
     return (
+        <IpProvider>
         <Router>
             <div className='quiz'>
                 <Routes>
@@ -121,21 +130,27 @@ export default function App(){
                     <Route path="/friends" element={<Friends/>} />
                     <Route path="/contact" element={<Contact/>} />
                     <Route path="/about" element={<About/>} />
+                    <Route path="/interview" element={<Interview setPdfId={setPdfId} setUrl={setUrl} pdfId={pdfId} setAts={setAts}/>} />
+                    <Route path="/interchat" element={<InterviewChat ats={ats} setFeedback={setFeedback}/>} />
+                    <Route path="/interlast" element={<Interlast feedback={feedback}/>} />
                     <Route path="*" element={<NotFound />} />
+                    <Route path='/techchat' element={<TechChat setFeedback={setFeedback}/>}/>
                 </Routes>
             </div>
         </Router>
+        </IpProvider>
     );
 }
 
 function Auth({setUserData}){
-
+    const setIp = useIp()[1];
     const [statetype,setStatetype]=useState(true);
     const [incpass,setIncpass]=useState(false);
     const navigate = useNavigate();   
 
     function handleLogin(event) {
         event.preventDefault();
+        setIp(event.target.ipadd.value);
         const formData = {
             username: event.target.username.value,
             password: event.target.password.value
@@ -212,6 +227,9 @@ function Auth({setUserData}){
                         <tr>
                             <td><input id='leftip' type="username" name="username" placeholder="Enter Username..." required/></td>
                             <td><input id='rightip' type="password" name="password" placeholder="Enter Password..." required/></td>
+                        </tr>
+                        <tr>
+                            <td colSpan={2}><input id='ipadd' type="text" name="ipadd" placeholder="Enter IP Address..." required/></td>
                         </tr>
                         <tr>
                             <td colSpan={2}><button type="submit">LOG IN</button></td>
@@ -321,7 +339,7 @@ function Dashboard({userData,setPdfId,userTests,setUserTests,setUrl,setEssay}){
                 <ul>
                     <li id="logo"><img src="" alt=""></img></li>
                     <li><button onClick={()=>navigate('/dashboard')}>HOME</button></li>
-                    <li><button onClick={()=>navigate('/dashboard')}>TEST SERIES</button></li>
+                    <li><button onClick={()=>navigate('/interview')}>PRACTICE INTERVIEW</button></li>
                     <li><button onClick={()=>navigate('/friends')}>FRIENDS</button></li>
                     <li><button onClick={()=>navigate('/contact')}>CONTACT US</button></li>
                     <li><button onClick={()=>navigate('/about')}>ABOUT US</button></li>
@@ -415,7 +433,7 @@ function Dashboard({userData,setPdfId,userTests,setUserTests,setUrl,setEssay}){
             status:status,
             chStatus:chStatus
         };
-        await fetch(chStatus===true?`http://192.168.1.13:5000/start2player`:(essay===true?`http://192.168.1.13:5000/paraque`:`http://192.168.1.13:5000/startQuiz`), {
+        await fetch(chStatus===true?`http://172.20.10.3:5000/start2player`:(essay===true?`http://172.20.10.3:5000/paraque`:`http://172.20.10.3:5000/startQuiz`), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -603,7 +621,7 @@ function Navbar({curr,setCurr,userData,pdfId,dummy,create,join,essay,setDesdummy
         const formData={
             dummy:dummy
         };
-        await fetch(`http://192.168.1.13:5000/paraanswer`, {
+        await fetch(`http://172.20.10.3:5000/paraanswer`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -797,7 +815,7 @@ function MultiPlayer({userData,setUrl,setPdfId,status,setStatus,chStatus,setChSt
             const formData = {
                 username: userData.username,
             };
-            await fetch(`http://192.168.1.13:5000/generateToken`, {
+            await fetch(`http://172.20.10.3:5000/generateToken`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -832,7 +850,7 @@ function MultiPlayer({userData,setUrl,setPdfId,status,setStatus,chStatus,setChSt
                 chStatus:chStatus
             };
             console.log(formData);
-            await fetch(`http://192.168.1.13:5000/start2player`, {
+            await fetch(`http://172.20.10.3:5000/start2player`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -871,7 +889,7 @@ function MultiPlayer({userData,setUrl,setPdfId,status,setStatus,chStatus,setChSt
             const formData = {
                 token:tokenId.value
             };
-            await fetch(`http://192.168.1.13:5000/verifyToken`, {
+            await fetch(`http://172.20.10.3:5000/verifyToken`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -952,7 +970,7 @@ function Queries({url}) {
             link:url,
             var:0,
         };
-        await fetch(`http://192.168.1.13:5000/askQuery`, {
+        await fetch(`http://172.20.10.3:5000/askQuery`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -994,7 +1012,7 @@ function Queries({url}) {
     
         try {
             const formData = { query: newMessage,var:1, };
-            const response = await fetch(submit?`http://192.168.1.13:5000/askQuery`:`http://192.168.1.13:5000/websearch`, {
+            const response = await fetch(submit?`http://172.20.10.3:5000/askQuery`:`http://172.20.10.3:5000/websearch`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -1074,7 +1092,7 @@ function MP_result({userData,dummy,create,join}){
             marks:corr,
             wrong:wrong
         };
-        await fetch(create?`http://192.168.1.13:5000/user1submit`:`http://192.168.1.13:5000/user2submit`, {
+        await fetch(create?`http://172.20.10.3:5000/user1submit`:`http://172.20.10.3:5000/user2submit`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -1194,7 +1212,7 @@ function SSB() {
             story: document.querySelector('.imgdes').value
         };
         try {
-            const response = await fetch(`http://192.168.1.13:5000/qualitycheck`, {
+            const response = await fetch(`http://172.20.10.3:5000/qualitycheck`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -1213,7 +1231,7 @@ function SSB() {
     }
 
     const downloadImage = async () => {
-        const imageUrl = 'http://192.168.1.13:5000/ssbimage';
+        const imageUrl = 'http://172.20.10.3:5000/ssbimage';
 
         try {
             const response = await axios({
@@ -1331,7 +1349,7 @@ function Place_exam(){
     };
 
     async function QuesGen(){
-        await fetch(`http://192.168.1.13:5000/placement_que`, {
+        await fetch(`http://172.20.10.3:5000/placement_que`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -1359,7 +1377,7 @@ function Place_exam(){
         const formData={
             answer:document.querySelector('#placeans').value
         };
-        await fetch(`http://192.168.1.13:5000/placement_res`, {
+        await fetch(`http://172.20.10.3:5000/placement_res`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -1408,7 +1426,797 @@ function Place_exam(){
         {ques && ((!sub && !res)?<button onClick={handleSubmit}>Submit</button>:<button onClick={()=>{navigate('/dashboard')}}>Home</button>)}
       </div>
     );
-  };
+};
+
+function Interview({setUrl,pdfId,setPdfId,setAts}){
+  const ip = useIp()[0];
+  const [link,setLink]=useState('');
+  const [options,setOptions]=useState([]);
+  const [shown,setShown] = useState(false);
+  const [sub,setSub]=useState(false);
+  const [status,setStatus]=useState(false);
+  const navigate=useNavigate();
+
+  const [openPicker, authResponse] = useDrivePicker();  
+    const handleOpenPicker = () => {
+            openPicker({
+            clientId: "51460907741-bsckge5dghc0i68evh2o7s32ljr83klj.apps.googleusercontent.com",
+            developerKey: "AIzaSyC2i0U6sQXh8ZA5aKLZool2Q40IlE5bEmA",
+            viewId: "DOCS",
+            showUploadView: true,
+            showUploadFolders: true,
+            supportDrives: true,
+            multiselect: false,
+            callbackFunction: (data) => {
+                if (data.action === 'cancel') {
+                    console.log('User clicked cancel/close button')
+                    return;
+                }
+                if(data.docs && data.docs.length > 0)
+                {
+                    setUrl(data.docs[0].url);
+                    setPdfId(data.docs[0].url);
+                }
+            },
+        })
+    }
+    async function handleSubmit(){
+        setStatus(true);
+        var jobdes=document.getElementById('job-des').value;
+        try {
+            const formData = { job: jobdes,link: pdfId,var:0,query:'' };
+            const response = await fetch(`${ip}/check_job`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+    
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            console.log("User data retrieved successfully:", data);
+            setOptions(data.options);
+        }
+        catch (error) {
+            console.error("Error retrieving user data:", error);
+        }
+    }
+    async function handleInterview(){
+        
+        try {
+            const formData = {};
+            const response = await fetch(link, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+    
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            console.log("User data retrieved successfully:", data);
+            setAts(data.ats);
+            data.ats?navigate('/interchat'):navigate('/techchat');
+        } catch (error) {
+            console.error("Error retrieving user data:", error);
+        }
+    }
+
+  return (
+    <div className='sole'>
+      {status ? <>{!options.length?<div className="interload"></div>:
+       <div className='inter-options'>
+        <table>
+            <tr >
+       <td id="iop" colSpan='2'><p>Which Interview would you like to proceed with?</p></td></tr>
+       <td>
+           {options.map((element)=>(
+               <tr><button onClick={()=>{
+                setLink(element.link);
+                handleInterview();
+               }}>{element.option}</button></tr>
+           ))}
+       </td></table>
+   </div>}</> :<><div className="interview-main">
+        <div className='logo'></div>
+        <div className='chat-left'>
+          <h1>Ace Your Interview<br></br>with<br></br><span style={{fontSize:"70px"}}><Typewriter
+                          options={{
+                              strings: [`CONFIDENCE`,'COURAGE','BOLDNESS'],
+                              autoStart: true,
+                              delay: 100,
+                              loop:true
+                          }}
+                      /></span></h1>
+          <table>
+            <tr>
+              <td><button id='start' onClick={()=>{
+                setSub(!sub);
+                sub?document.querySelector('.form').style.display="none":document.querySelector('.form').style.display="block";
+                document.querySelector('.form').scrollIntoView({ behavior: 'smooth' });
+              }}>Start<span className="arrow"> ➔</span></button></td>
+              <td><button id='learn' onClick={()=>{
+                setShown(!shown);
+                shown?document.getElementById('desc').style.display="none":document.getElementById('desc').style.display="block";
+              }}>{shown?"Show Less":"Learn More"}<span className="arrow"> ➔</span></button></td>
+            </tr>
+            <tr>
+              <td colSpan={"2"}><p id='desc'>Introducing our AI Interview Chatbot, an innovative solution designed to streamline the interview process. This intelligent chatbot conducts interviews by analyzing user resumes and job profiles, tailoring questions to match the candidate's experience and the job requirements. Leveraging advanced natural language processing, the AI can assess responses in real-time, providing valuable insights into the candidate's skills, competencies, and suitability for the role. By simulating a human interviewer, our chatbot ensures a consistent and unbiased interview experience, saving time for HR teams and enhancing the candidate experience. This tool is perfect for initial screenings, allowing companies to efficiently identify top talent.</p></td>
+            </tr>
+          </table>
+        </div>
+        <div className='chat-right'></div>
+      </div>
+      <div className='form'>
+        <h1 style={{fontSize:"40px"}}>Just a Step Ahead!!!</h1>
+        <form onSubmit={handleSubmit}><table>
+          <tr>
+            <td>Enter Job Description : </td>
+            <td id='tabright'><textarea id='job-des' placeholder='Type in here...' required></textarea></td>
+          </tr>
+          <tr>
+            <td>Resume</td>
+            <td id='tabright' className='form-upload'><input value={pdfId?"Uploaded":"Upload Now"} type="button" onClick={handleOpenPicker} disabled={!!pdfId} required></input></td>
+          </tr>
+          <tr>
+            <td>Interview Level : </td>
+            <td id='tabright'><select><option>Easy</option><option>Medium</option><option>Hard</option></select></td>
+          </tr>
+          <tr>
+            <td id='tabright' className='form-submit' colSpan={"2"}><button type='submit'>Submit<span className="arrow"> ➔</span></button></td>
+          </tr>
+        </table></form>
+        <div className='pic'></div>
+      </div></>}
+    </div>
+  );
+}
+function InterviewChat({ats,setFeedback}) {
+    const ip = useIp()[0];
+    const [messages, setMessages] = useState([{ text: "Introducing Interview Pro, an AI Interview Bot designed by three 4th-year B.Tech students to revolutionize the experience of giving mock interviews. ", sender: 'model' }]);
+    const [newMessage, setNewMessage] = useState('');
+    const [recognizing, setRecognizing] = useState(false);
+    const [ignoreOnEnd, setIgnoreOnEnd] = useState(false);
+    const [finalTranscript, setFinalTranscript] = useState('');
+    const [speechRecognition, setSpeechRecognition] = useState(null);
+    const [started,setStarted]=useState(false);
+    const navigate=useNavigate();
+  
+    useEffect(() => {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Speech Recognition is not supported in this browser.');
+        return;
+      }
+  
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+  
+      recognition.onstart = () => {
+        setRecognizing(true);
+        console.log('Speech recognition started.');
+      };
+  
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'no-speech') {
+          console.log('No speech detected.');
+          setIgnoreOnEnd(true);
+        } else if (event.error === 'audio-capture') {
+          console.log('Audio capture error.');
+          setIgnoreOnEnd(true);
+        } else if (event.error === 'not-allowed') {
+          console.log('Speech recognition permission denied.');
+          setIgnoreOnEnd(true);
+        }
+      };
+  
+      recognition.onend = () => {
+        setRecognizing(false);
+        if (ignoreOnEnd) return;
+        console.log('Speech recognition ended.');
+        if (!finalTranscript) {
+          console.log('No transcript available.');
+          return;
+        }
+        setMessages(prevMessages => [...prevMessages, { text: finalTranscript, sender: 'user' }]);
+      };
+  
+      recognition.onresult = (event) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+    
+        for (let i = 0; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+    
+        setNewMessage(finalTranscript + interimTranscript);
+      };
+  
+      setSpeechRecognition(recognition);
+    }, []);
+  
+    const startListening = () => {
+      if (speechRecognition) {
+        speechRecognition.lang = 'en-US';
+        speechRecognition.start();
+      }
+    };
+  
+    const stopListening = () => {
+      if (speechRecognition) {
+        speechRecognition.stop();
+      }
+    };
+  
+    const handleMessageSubmit = async (event) => {
+      event.preventDefault();
+      if (newMessage.trim() === '') return;
+      setMessages(prevMessages => [...prevMessages, { text: newMessage, sender: 'user' }]);
+      setNewMessage('');
+      
+      try {
+            const formData = { query: newMessage,var:1 };
+            const response = await fetch(`${ip}/start`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+    
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            const modelMessage = { text: data.question, sender: 'model' };
+            setMessages(prevMessages => [...prevMessages, modelMessage]);
+            const ttsOptions = {
+                method: "POST",
+                url: "https://api.edenai.run/v2/audio/text_to_speech",
+                headers: {
+                    authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWQwMTE0OWEtNWY2OC00YzY5LWFiNjctOGVjNWExNjljNTliIiwidHlwZSI6InNhbmRib3hfYXBpX3Rva2VuIn0.H378WJs4B42P-oOJET09Y6hcJiDxfncB33xbYLtNJ_M",
+                },
+                data: {
+                    providers: "openai",
+                    language: "en",
+                    text: data.question,
+                    option: "FEMALE",
+                    speed: 0.05
+                }
+              };
+              axios.request(ttsOptions)
+                .then(async (response) => {
+                    console.log(response.data);
+                    const encodedAudio = response.data.openai.audio;
+                    const audioBuffer = Uint8Array.from(atob(encodedAudio), c => c.charCodeAt(0)).buffer;
+                    saveAndPlayAudio(audioBuffer, 'tts_output.mp3');
+                    if(data.feedback!='')
+                    {
+                        setFeedback(data.feedback);
+                        navigate('/interlast');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error with text-to-speech:', error);
+                });
+              function saveAndPlayAudio(audioBuffer, filename = 'tts_output.mp3') {
+                const blob = new Blob([audioBuffer], { type: 'audio/mp3' });
+                const audioUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = audioUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                const audio = new Audio(audioUrl);
+                audio.play();
+                audio.onended = () => {
+                  console.log('Audio finished playing');
+                  URL.revokeObjectURL(audioUrl);
+                };
+              }
+            console.log("User data retrieved successfully:", data);
+        } catch (error) {
+            console.error("Error retrieving user data:", error);
+        }
+        setStarted(true);
+    };
+  
+    const handleChange = (event) => {
+      setNewMessage(event.target.value);
+    };
+
+    async function handleEnd(){
+        try {
+            const formData = { query: "end",var:1 };
+            const response = await fetch(`${ip}/start`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+    
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setFeedback(data.feedback);
+            navigate('/interlast');
+            console.log("User data retrieved successfully:", data);
+        } catch (error) {
+            console.error("Error retrieving user data:", error);
+        }
+    }
+  
+    return (
+      <div className="main-chat">
+        <div className='logo'></div>
+        <div className="rchat">
+            <h1 style={{fontSize:"35px"}}>ATS</h1>
+            <hr color="black"></hr>
+            <div dangerouslySetInnerHTML={{ __html: ats }} id="atsp"></div>
+            <button id="interend" onClick={handleEnd}>END INTERVIEW</button>
+        </div>
+        <div className="lchat">
+          <div className='chat-msgs'>
+            {messages.length !== 0 && (
+              <div className="messages">
+                {messages.map((message, index) => (
+                  <div key={index} className={`message ${message.sender}`}>
+                    <p>{message.text}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className='chat-options'>
+            <button id='mic' onClick={recognizing ? stopListening : startListening}></button>
+            <input
+              type='text'
+              placeholder={!started?'Type "start" to Start...':'Enter your Answer...'}
+              id='msgbox'
+              value={newMessage}
+              onChange={handleChange}
+            />
+            <button id='send' onClick={handleMessageSubmit}></button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+function Interlast({feedback}){
+    const ip = useIp()[0];
+    async function handleDownload(){
+        try {
+            const formData = {};
+            const response = await fetch(`${ip}/download`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+    
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            window.location.href = data.link;
+            console.log("User data retrieved successfully:", data);
+        } catch (error) {
+            console.error("Error retrieving user data:", error);
+        }
+    }
+    const navigate=useNavigate();
+
+    return (
+        <div className="interlast">
+            <div className="logo"></div>
+            <div className="res-right">
+                <div className="feed-head"><h1>FEEDBACK SUMMARY</h1></div>
+                <div dangerouslySetInnerHTML={{ __html: feedback }} id="inter-feed"></div>
+                <div className="interend-options"><button id="inter-download" onClick={handleDownload}>Download PDF</button><button onClick={()=>{navigate('/dashboard')}} id="inter-home">HOME</button></div>
+            </div>
+            <div className="res-left">
+                <h1>INTERVIEW COMPLETED SUCCESSFULLY</h1>
+            </div>
+        </div>
+    );
+}
+
+function TechChat({setFeedback}){
+    const ip = useIp()[0];
+    const navigate=useNavigate();
+    const [language,setLanguage]=useState('');
+    const [input, setInput] = useState('');
+    const [output, setOutput] = useState([]);
+    const [editor, setEditor] = useState(null);
+    const [messages, setMessages] = useState([{ text: "Introducing Interview Pro, an AI Interview Bot designed by three 4th-year B.Tech students to revolutionize the experience of giving mock interviews. ", sender: 'model' }]);
+    const [newMessage, setNewMessage] = useState('');
+    const [recognizing, setRecognizing] = useState(false);
+    const [ignoreOnEnd, setIgnoreOnEnd] = useState(false);
+    const [finalTranscript, setFinalTranscript] = useState('');
+    const [speechRecognition, setSpeechRecognition] = useState(null);
+    const [started,setStarted]=useState(false);
+
+    useEffect(() => {
+        if(editor===null)
+        {
+            const initEditor = codemirror.fromTextArea(document.getElementById('editor'), {
+                mode: 'text/x-c++src',
+                theme: 'dracula',
+                lineNumbers: true,
+                autoCloseBrackets: true,
+            });
+            initEditor.setSize('100%', '82%');
+            setEditor(initEditor);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (editor) {
+            const mode = language === 'Java' ? 'text/x-java' : language === 'Python' ? 'text/x-python' : 'text/x-c++src';
+            editor.setOption('mode', mode);
+        }
+    }, [language, editor]);
+
+    async function sendCode(codeData,outputData){
+        try {
+            await fetch(`${ip}/technical`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    query:"",
+                    code:codeData,
+                    output:outputData.output
+                }),
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    const modelMessage = { text: data.question, sender: 'model' };
+                    setMessages(prevMessages => [...prevMessages, modelMessage]);
+                    const ttsOptions = {
+                        method: "POST",
+                        url: "https://api.edenai.run/v2/audio/text_to_speech",
+                        headers: {
+                            authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWQwMTE0OWEtNWY2OC00YzY5LWFiNjctOGVjNWExNjljNTliIiwidHlwZSI6InNhbmRib3hfYXBpX3Rva2VuIn0.H378WJs4B42P-oOJET09Y6hcJiDxfncB33xbYLtNJ_M",
+                        },
+                        data: {
+                            providers: "openai",
+                            language: "en",
+                            text: data.question,
+                            option: "FEMALE",
+                            speed: 0.05
+                        }
+                        };
+                        axios.request(ttsOptions)
+                        .then(async (response) => {
+                            console.log(response.data);
+                            const encodedAudio = response.data.openai.audio;
+                            const audioBuffer = Uint8Array.from(atob(encodedAudio), c => c.charCodeAt(0)).buffer;
+                            saveAndPlayAudio(audioBuffer, 'tts_output.mp3');
+                            if(data.feedback!='')
+                            {
+                                setFeedback(data.feedback);
+                                navigate('/interlast');
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Error with text-to-speech:', error);
+                        });
+                    console.log("User data retrieved successfully:", data);
+                })
+        } catch (error) {
+            console.error('Error compiling code:', error);
+            setOutput(['Error compiling code']);
+        }
+    }
+
+    const handleRunCode = async () => {
+        try {
+            fetch("http://localhost:3002/https://api.jdoodle.com/v1/execute", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    clientId: "e8241518a5cb45bc02c5c059db460962",
+                    clientSecret: "48cbb2ecc91bd8eee18fa9fdbc356f900733f23d6399a69f74f3ec9fb7f56e7d",
+                    script: `${editor.getValue()}`,
+                    stdin: "",
+                    language: language.toLowerCase(),
+                    versionIndex: "3",
+                    compileOnly: false,
+                }),
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log("Success:", data);
+                    setOutput(data);
+                    var code=document.getElementById('editor').value;
+                    if(output.isExecutionSuccess)
+                    sendCode(editor.getValue(),data);
+                })
+        } catch (error) {
+            console.error('Error compiling code:', error);
+            setOutput(['Error compiling code']);
+        }
+    };
+
+    function saveAndPlayAudio(audioBuffer, filename = 'tts_output.mp3') {
+        const blob = new Blob([audioBuffer], { type: 'audio/mp3' });
+        const audioUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = audioUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        const audio = new Audio(audioUrl);
+        audio.play();
+        audio.onended = () => {
+          console.log('Audio finished playing');
+          URL.revokeObjectURL(audioUrl);
+        };
+      }
+
+    useEffect(() => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          alert('Speech Recognition is not supported in this browser.');
+          return;
+        }
+    
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+    
+        recognition.onstart = () => {
+          setRecognizing(true);
+          console.log('Speech recognition started.');
+        };
+    
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error:', event.error);
+          if (event.error === 'no-speech') {
+            console.log('No speech detected.');
+            setIgnoreOnEnd(true);
+          } else if (event.error === 'audio-capture') {
+            console.log('Audio capture error.');
+            setIgnoreOnEnd(true);
+          } else if (event.error === 'not-allowed') {
+            console.log('Speech recognition permission denied.');
+            setIgnoreOnEnd(true);
+          }
+        };
+    
+        recognition.onend = () => {
+          setRecognizing(false);
+          if (ignoreOnEnd) return;
+          console.log('Speech recognition ended.');
+          if (!finalTranscript) {
+            console.log('No transcript available.');
+            return;
+          }
+          setMessages(prevMessages => [...prevMessages, { text: finalTranscript, sender: 'user' }]);
+        };
+    
+        recognition.onresult = (event) => {
+          let finalTranscript = '';
+          let interimTranscript = '';
+      
+          for (let i = 0; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript + ' ';
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+      
+          setNewMessage(finalTranscript + interimTranscript);
+        };
+    
+        setSpeechRecognition(recognition);
+      }, []);
+    
+      const startListening = () => {
+        if (speechRecognition) {
+          speechRecognition.lang = 'en-US';
+          speechRecognition.start();
+        }
+      };
+    
+      const stopListening = () => {
+        if (speechRecognition) {
+          speechRecognition.stop();
+        }
+      };
+    
+      const handleMessageSubmit = async (event) => {
+        event.preventDefault();
+        if (newMessage.trim() === '') return;
+        setMessages(prevMessages => [...prevMessages, { text: newMessage, sender: 'user' }]);
+        setNewMessage('');
+        
+        try {
+              const formData = { query: newMessage,var:1 };
+              const response = await fetch(`${ip}/technical`, {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify(formData)
+              });
+      
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              const data = await response.json();
+              const modelMessage = { text: data.question, sender: 'model' };
+              setMessages(prevMessages => [...prevMessages, modelMessage]);
+              const ttsOptions = {
+                  method: "POST",
+                  url: "https://api.edenai.run/v2/audio/text_to_speech",
+                  headers: {
+                      authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWQwMTE0OWEtNWY2OC00YzY5LWFiNjctOGVjNWExNjljNTliIiwidHlwZSI6InNhbmRib3hfYXBpX3Rva2VuIn0.H378WJs4B42P-oOJET09Y6hcJiDxfncB33xbYLtNJ_M",
+                  },
+                  data: {
+                      providers: "openai",
+                      language: "en",
+                      text: data.question,
+                      option: "FEMALE",
+                      speed: 0.05
+                  }
+                };
+                axios.request(ttsOptions)
+                  .then(async (response) => {
+                      console.log(response.data);
+                      const encodedAudio = response.data.openai.audio;
+                      const audioBuffer = Uint8Array.from(atob(encodedAudio), c => c.charCodeAt(0)).buffer;
+                      saveAndPlayAudio(audioBuffer, 'tts_output.mp3');
+                      if(data.feedback!='')
+                      {
+                        setFeedback(data.feedback);
+                        navigate('/interlast');
+                      }
+                  })
+                  .catch((error) => {
+                      console.error('Error with text-to-speech:', error);
+                  });
+              console.log("User data retrieved successfully:", data);
+          } catch (error) {
+              console.error("Error retrieving user data:", error);
+          }
+          setStarted(true);
+      };
+    
+      const handleChange = (event) => {
+        setNewMessage(event.target.value);
+      };
+
+      async function handleEnd(){
+        try {
+            const formData = { query: "end",var:1 };
+            const response = await fetch(`${ip}/technical`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+    
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setFeedback(data.feedback);
+            navigate('/interlast');
+            console.log("User data retrieved successfully:", data);
+        } catch (error) {
+            console.error("Error retrieving user data:", error);
+        }
+    }
+
+    return (
+        <div className="techmain">
+            <div className="logo"></div>
+            <div className="dash_nav">
+                <ul><li><button onClick={()=>navigate('/dashboard')}>HOME</button></li>
+                <li><button onClick={()=>navigate('/interview')}>PRACTICE INTERVIEW</button></li>
+                <li><button onClick={()=>navigate('/friends')}>FRIENDS</button></li>
+                <li><button onClick={()=>navigate('/contact')}>CONTACT US</button></li>
+                <li><button onClick={()=>navigate('/about')}>ABOUT US</button></li></ul>
+            </div>
+            <div className="techno-chat">
+                <div className="techbot">
+                    <div id="techbot-header">
+                        <div
+                            class="card-header d-flex justify-content-between align-items-center p-3 text-white border-bottom-0"
+                            style={{ borderTopLeftRadius: "15px", borderTopRightRadius: "15px" , backgroundColor: "rgb(39,42,54)"}}>
+                            <i class="fas fa-angle-left"></i>
+                            <p class="mb-0 fw-bold">Live chat</p>
+                            <i class="fas fa-times"></i>
+                        </div>
+                    </div>
+                    <div className="chat-section">
+                        {messages.map((message, index) => (
+                            <div key={index} className={`message ${message.sender}`} id={`${message.sender}`}>
+                                <p style={{fontSize:"20px"}}>{message.text}</p>
+                            </div>
+                            ))}
+                    </div>
+                    <div className="tech-chat-opt">
+                        <form onSubmit={handleMessageSubmit}>
+                            <button id='micc' onClick={recognizing ? stopListening : startListening}></button>
+                            <input
+                            type='text'
+                            placeholder={!started?'Type "start" to Start...':'Enter your Answer...'}
+                            id='msgboxc'
+                            value={newMessage}
+                            onChange={handleChange}
+                            />
+                            <button type="submit" id='sendc'></button>
+                        </form>
+                    </div> 
+                </div>
+                <div className="editor">
+                    <div className="d-flex justify-content-between mb-2 bg-dark rounded p-2">
+                        <div className="col-12 w-25">
+                            <select
+                                className="form-select"
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                            >
+                                <option value="Java">Java</option>
+                                <option value="Cpp">Cpp</option>
+                                <option value="Python3">Python</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button type="button" id="run" className="btn btn-success" onClick={handleRunCode}>
+                                Run <i className="bi bi-play-fill"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <button style={{backgroundColor:"red",border:"none"}} type="button" id="endbtn" className="btn btn-success" onClick={handleEnd}>
+                                End Interview
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="editor" className="form-control" aria-label="Code Editor"></textarea>
+                    <div className="d-flex justify-content-between bg-dark rounded p-2 mt-2">
+                        <ul className="list-group exec-code">
+                            {output?(output.isExecutionSuccess?<>
+                                <li style={{backgroundColor:'green'}}>Output : {output.output}</li>
+                                <li>CPU Time : {output.cpuTime}</li>
+                                <li>Memory : {output.memory}</li>
+                            </>:<li style={{backgroundColor:'red'}}>Error : {output.output}</li>):<li>Compiled Output is Shown Here</li>}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+  
 
 function Friends(){
 
